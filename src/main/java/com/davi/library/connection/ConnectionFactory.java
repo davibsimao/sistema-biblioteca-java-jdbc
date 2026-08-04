@@ -6,7 +6,7 @@ import java.sql.SQLException;
 
 public class ConnectionFactory {
     public static void main(String[] args) {
-        String url = System.getenv().getOrDefault("DB_URL", "jdbc:mysql://localhost:3306/library_db");
+        String url = System.getenv().getOrDefault("DB_URL", "jdbc:mysql://localhost:3307/library_db");
         String user = System.getenv().getOrDefault("DB_USER", "root");
         String password = System.getenv("DB_PASSWORD");
 
