@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.davi</groupId>
-    <artifactId>sistema-biblioteca-jdbc</artifactId>
+    <artifactId>library-management-jdbc</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <properties>
