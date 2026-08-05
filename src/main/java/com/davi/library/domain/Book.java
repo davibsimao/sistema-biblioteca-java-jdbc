@@ -7,7 +7,7 @@ public class Book {
     private String isbn;
     private boolean available = true;
 
-    public Book(Long id, String title, String author, String isbn) {
+    public Book(String title, String author, String isbn) {
         if (title == null || title.isBlank()) {
             throw new IllegalArgumentException("Title must not be blank");
         }
@@ -20,7 +20,6 @@ public class Book {
             throw new IllegalArgumentException("ISBN must not be blank");
         }
 
-        this.id = id;
         this.title = title;
         this.author = author;
         this.isbn = isbn;
