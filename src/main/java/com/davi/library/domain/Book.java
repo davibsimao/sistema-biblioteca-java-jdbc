@@ -7,6 +7,18 @@ public class Book {
     private String isbn;
     private boolean available = true;
 
+    public static Book restore(Long id, String title, String author, String isbn, boolean available) {
+        if (id == null || id <= 0) {
+            throw new IllegalArgumentException("Id must be greater than zero");
+        }
+
+        Book book = new Book(title, author, isbn);
+        book.id = id;
+        book.available = available;
+
+        return book;
+    }
+
     public Book(String title, String author, String isbn) {
         if (title == null || title.isBlank()) {
             throw new IllegalArgumentException("Title must not be blank");

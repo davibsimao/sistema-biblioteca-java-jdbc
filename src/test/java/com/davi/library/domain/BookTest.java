@@ -56,8 +56,36 @@ class BookTest {
     void shouldCreateBookWithoutId() {
         Book book = new Book("title", "author", "isbn");
         Assertions.assertNull(book.getId());
+    }
+
+    @Test
+    void shouldRestoreBookWithDatabaseId() {
+        Book book = Book.restore(1L, "Clean Code", "Robert C. Martin", "978-0132350884", false);
+
+        Assertions.assertEquals(1L, book.getId());
+        Assertions.assertFalse(book.isAvailable());
+    }
+
+    @Test
+    void shouldRejectNullId() {
+        Assertions.assertThrows(IllegalArgumentException.class,
+                () -> Book.restore(null, "title", "author", "isbn", false));
+    }
+
+    @Test
+    void shouldRejectNegativeId() {
+        Assertions.assertThrows(IllegalArgumentException.class,
+                () -> Book.restore((long) -1, "title", "author", "isbn", false));
+    }
+
+    @Test
+    void shouldRejectZeroId() {
+        Assertions.assertThrows(IllegalArgumentException.class,
+                () -> Book.restore(0L, "title", "author", "isbn", false));
 
     }
+
+
 
 
 }
