@@ -5,6 +5,7 @@ import com.davi.library.domain.Book;
 import com.davi.library.exception.DataAccessException;
 
 import java.sql.*;
+import java.util.Optional;
 
 public class JdbcBookRepository implements BookRepository {
     private final ConnectionFactory connectionFactory;
@@ -45,5 +46,34 @@ public class JdbcBookRepository implements BookRepository {
         }
 
         throw new DataAccessException("Failed to save book: generated id not returned");
+    }
+
+    @Override
+    public Optional<Book> findByIsbn(String isbn) {
+        String sql = "SELECT id, title, author, isbn, available FROM books WHERE isbn = ?";
+
+        try (Connection conn = connectionFactory.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)){
+            ps.setString(1,isbn);
+
+
+            try(ResultSet rs = ps.executeQuery()){
+                if (rs.next()) {
+                    Book book = Book.restore(
+                            rs.getLong("id"),
+                            rs.getString("title"),
+                            rs.getString("author"),
+                            rs.getString("isbn"),
+                            rs.getBoolean("available"));
+
+                    return Optional.of(book);
+
+                }
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Failed to find book by ISBN", e);
+        }
+
+        return Optional.empty();
     }
 }
