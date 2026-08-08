@@ -5,6 +5,8 @@ import com.davi.library.domain.Book;
 import com.davi.library.exception.DataAccessException;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 public class JdbcBookRepository implements BookRepository {
@@ -56,7 +58,6 @@ public class JdbcBookRepository implements BookRepository {
              PreparedStatement ps = conn.prepareStatement(sql)){
             ps.setString(1,isbn);
 
-
             try(ResultSet rs = ps.executeQuery()){
                 if (rs.next()) {
                     Book book = Book.restore(
@@ -75,5 +76,31 @@ public class JdbcBookRepository implements BookRepository {
         }
 
         return Optional.empty();
+    }
+
+    @Override
+    public List<Book> findAll() {
+        String sql = "SELECT id, title, author, isbn, available FROM books";
+        List<Book> books = new ArrayList<>();
+
+        try (Connection conn = connectionFactory.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            try (ResultSet rs = ps.executeQuery()){
+                while (rs.next()) {
+                    Book bookRestore = Book.restore(rs.getLong("id"),
+                            rs.getString("title"),
+                            rs.getString("author"),
+                            rs.getString("isbn"),
+                            rs.getBoolean("available"));
+
+                    books.add(bookRestore);
+                }
+            }
+
+
+        } catch (SQLException e) {
+            throw new DataAccessException("Failed to find books", e);
+        }
+        return books;
     }
 }

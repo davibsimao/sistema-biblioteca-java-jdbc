@@ -4,6 +4,7 @@ import com.davi.library.connection.ConnectionFactory;
 import com.davi.library.domain.Book;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -46,4 +47,33 @@ class JdbcBookRepositoryIntegrationTest {
         assertEquals(book.getIsbn(), found.getIsbn());
         assertEquals(book.isAvailable(), found.isAvailable());
     }
+
+    @Test
+    void shouldFindAllBooks () {
+        ConnectionFactory connectionFactory = new ConnectionFactory();
+        JdbcBookRepository repository = new JdbcBookRepository(connectionFactory);
+
+        Book book1 = new Book("The Pragmatic Programmer", "Andrew Hunt", "ISBNtest-" + System.currentTimeMillis() + "-1");
+        Book book2 = new Book("Effective Java", "Joshua Bloch", "ISBNtest-" + System.currentTimeMillis() + "-2");
+
+        repository.save(book1);
+        repository.save(book2);
+
+        List<Book> findAll = repository.findAll();
+
+        assertNotNull(findAll);
+        assertTrue(findAll.size() >= 2);
+
+        boolean containsBook1 = findAll.stream()
+                .anyMatch(b -> b.getIsbn().equals(book1.getIsbn()));
+
+        boolean containsBook2 = findAll.stream()
+                .anyMatch(b -> b.getIsbn().equals(book2.getIsbn()));
+
+        assertTrue(containsBook1);
+        assertTrue(containsBook2);
+
+
+    }
+
 }
