@@ -11,4 +11,6 @@ public interface BookRepository {
     Optional<Book> findByIsbn(String isbn);
 
     List<Book> findAll ();
+
+    Book update (Long id, String title, String author, String isbn);
 }

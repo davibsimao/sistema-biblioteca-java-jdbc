@@ -73,7 +73,30 @@ class JdbcBookRepositoryIntegrationTest {
         assertTrue(containsBook1);
         assertTrue(containsBook2);
 
+    }
 
+    @Test
+    void shouldUpdateBook() {
+        ConnectionFactory connectionFactory = new ConnectionFactory();
+        JdbcBookRepository repository = new JdbcBookRepository(connectionFactory);
+
+        Book book = new Book("The Pragmatic Programmer", "Andrew Hunt", "ISBNtest-" + System.currentTimeMillis() + "-1");
+        Book saved = repository.save(book);
+
+        String newIsbn = "isbnUpdateTest-" + System.currentTimeMillis();
+        Book updated = repository.update(saved.getId(), "titleUpdateTest", "authorUpdateTest", newIsbn);
+
+        assertEquals("titleUpdateTest", updated.getTitle());
+        assertEquals("authorUpdateTest", updated.getAuthor());
+        assertEquals(newIsbn, updated.getIsbn());
+
+        Optional<Book> result = repository.findByIsbn(newIsbn);
+        assertTrue(result.isPresent());
+
+        Book bookFind = result.get();
+        assertEquals(newIsbn, bookFind.getIsbn());
+        assertEquals("titleUpdateTest", bookFind.getTitle());
+        assertEquals("authorUpdateTest", bookFind.getAuthor());
     }
 
 }

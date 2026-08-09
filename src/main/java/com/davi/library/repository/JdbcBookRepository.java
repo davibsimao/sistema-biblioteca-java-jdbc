@@ -55,10 +55,10 @@ public class JdbcBookRepository implements BookRepository {
         String sql = "SELECT id, title, author, isbn, available FROM books WHERE isbn = ?";
 
         try (Connection conn = connectionFactory.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)){
-            ps.setString(1,isbn);
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, isbn);
 
-            try(ResultSet rs = ps.executeQuery()){
+            try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     Book book = Book.restore(
                             rs.getLong("id"),
@@ -85,7 +85,7 @@ public class JdbcBookRepository implements BookRepository {
 
         try (Connection conn = connectionFactory.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            try (ResultSet rs = ps.executeQuery()){
+            try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     Book bookRestore = Book.restore(rs.getLong("id"),
                             rs.getString("title"),
@@ -97,10 +97,47 @@ public class JdbcBookRepository implements BookRepository {
                 }
             }
 
-
         } catch (SQLException e) {
             throw new DataAccessException("Failed to find books", e);
         }
         return books;
+    }
+
+    @Override
+    public Book update(Long id, String title, String author, String isbn) {
+        String selectSql = "SELECT available FROM books WHERE id = ?";
+        String updateSql = "UPDATE books SET title = ?, author = ?, isbn = ? WHERE id = ?";
+
+        try (Connection conn = connectionFactory.getConnection()) {
+
+            boolean currentAvailable;
+            try (PreparedStatement selectPs = conn.prepareStatement(selectSql)) {
+                selectPs.setLong(1, id);
+                try (ResultSet rs = selectPs.executeQuery()) {
+                    if (!rs.next()) {
+                        throw new DataAccessException("Book not found with id: " + id);
+                    }
+                    currentAvailable = rs.getBoolean("available");
+                }
+            }
+
+            try (PreparedStatement updatePs = conn.prepareStatement(updateSql)) {
+                updatePs.setString(1, title);
+                updatePs.setString(2, author);
+                updatePs.setString(3, isbn);
+                updatePs.setLong(4, id);
+
+                int rowsAffected = updatePs.executeUpdate();
+
+                if (rowsAffected != 1) {
+                    throw new DataAccessException("Failed to update book: no rows affected");
+                }
+            }
+
+            return Book.restore(id, title, author, isbn, currentAvailable);
+
+        } catch (SQLException e) {
+            throw new DataAccessException("Failed to update book", e);
+        }
     }
 }
