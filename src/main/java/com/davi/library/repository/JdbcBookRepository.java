@@ -159,4 +159,31 @@ public class JdbcBookRepository implements BookRepository {
             throw new DataAccessException("Failed to delete book", e);
         }
     }
+
+    @Override
+    public Optional<Book> findById(Long id) {
+        String sql = "SELECT id, title, author, isbn, available FROM books WHERE id = ?";
+
+        try (Connection conn = connectionFactory.getConnection();
+        PreparedStatement ps  = conn.prepareStatement(sql)) {
+            ps.setLong(1, id);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Book book = Book.restore(
+                            rs.getLong("id"),
+                            rs.getString("title"),
+                            rs.getString("author"),
+                            rs.getString("isbn"),
+                            rs.getBoolean("available"));
+
+                    return Optional.of(book);
+                }
+            }
+        }catch (SQLException e) {
+            throw new DataAccessException("Failed to find book by id", e);        }
+
+
+        return Optional.empty();
+    }
 }

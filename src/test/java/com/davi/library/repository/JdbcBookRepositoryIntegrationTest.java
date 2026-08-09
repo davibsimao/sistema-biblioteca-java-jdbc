@@ -129,4 +129,23 @@ class JdbcBookRepositoryIntegrationTest {
         });
     }
 
+    @Test
+    void shouldFindBookById() {
+        ConnectionFactory connectionFactory = new ConnectionFactory();
+        JdbcBookRepository repository = new JdbcBookRepository(connectionFactory);
+
+        Book book = new Book("titleTest", "authorTest", "ISBNtest-" + System.currentTimeMillis());
+        Book saved = repository.save(book);
+
+        Optional<Book> result = repository.findById(saved.getId());
+
+        assertTrue(result.isPresent());
+
+        Book found = result.get();
+        assertEquals(saved.getId(), found.getId());
+        assertEquals(book.getTitle(), found.getTitle());
+        assertEquals(book.getAuthor(), found.getAuthor());
+        assertEquals(book.getIsbn(), found.getIsbn());
+        assertEquals(book.isAvailable(), found.isAvailable());
+    }
 }
