@@ -13,4 +13,6 @@ public interface BookRepository {
     List<Book> findAll ();
 
     Book update (Long id, String title, String author, String isbn);
+
+    void delete(Long id);
 }

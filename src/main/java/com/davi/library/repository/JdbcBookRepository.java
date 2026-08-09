@@ -140,4 +140,23 @@ public class JdbcBookRepository implements BookRepository {
             throw new DataAccessException("Failed to update book", e);
         }
     }
+
+    @Override
+    public void delete(Long id) {
+        String sql = "DELETE FROM books WHERE id = ?";
+
+        try (Connection conn = connectionFactory.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setLong(1, id);
+            int rowsAffected = ps.executeUpdate();
+
+            if (rowsAffected == 0) {
+                throw new DataAccessException("Book not found with id: " + id);
+            }
+
+        } catch (SQLException e) {
+            throw new DataAccessException("Failed to delete book", e);
+        }
+    }
 }

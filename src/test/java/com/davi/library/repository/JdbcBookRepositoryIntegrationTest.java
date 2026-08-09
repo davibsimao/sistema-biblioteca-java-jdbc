@@ -2,6 +2,7 @@ package com.davi.library.repository;
 
 import com.davi.library.connection.ConnectionFactory;
 import com.davi.library.domain.Book;
+import com.davi.library.exception.DataAccessException;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -94,9 +95,38 @@ class JdbcBookRepositoryIntegrationTest {
         assertTrue(result.isPresent());
 
         Book bookFind = result.get();
+
         assertEquals(newIsbn, bookFind.getIsbn());
         assertEquals("titleUpdateTest", bookFind.getTitle());
         assertEquals("authorUpdateTest", bookFind.getAuthor());
+    }
+
+    @Test
+    void shouldDeleteBook() {
+        ConnectionFactory connectionFactory = new ConnectionFactory();
+        JdbcBookRepository repository = new JdbcBookRepository(connectionFactory);
+
+        Book book = new Book("titleDelete", "authorDelete", "isbnDelete-" + System.currentTimeMillis() + "-1");
+        Book saved = repository.save(book);
+
+        repository.delete(saved.getId());
+
+        Optional<Book> byIsbn = repository.findByIsbn(saved.getIsbn());
+
+        assertTrue(byIsbn.isEmpty());
+
+    }
+
+    @Test
+    void shouldThrowExceptionWhenDeletingNonExistentBook() {
+        ConnectionFactory connectionFactory = new ConnectionFactory();
+        JdbcBookRepository repository = new JdbcBookRepository(connectionFactory);
+
+        Long nonExistentId = 999999L;
+
+        assertThrows(DataAccessException.class, () -> {
+            repository.delete(nonExistentId);
+        });
     }
 
 }

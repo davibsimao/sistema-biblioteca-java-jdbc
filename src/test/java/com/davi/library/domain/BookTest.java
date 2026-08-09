@@ -84,8 +84,4 @@ class BookTest {
                 () -> Book.restore(0L, "title", "author", "isbn", false));
 
     }
-
-
-
-
 }
