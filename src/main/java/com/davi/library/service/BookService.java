@@ -1,6 +1,7 @@
 package com.davi.library.service;
 
 import com.davi.library.domain.Book;
+import com.davi.library.exception.BookNotFoundException;
 import com.davi.library.exception.DuplicateIsbnException;
 import com.davi.library.exception.InvalidIsbnFormatException;
 import com.davi.library.repository.BookRepository;
@@ -38,6 +39,26 @@ public class BookService {
 
     public List<Book> findAll() {
         return bookRepository.findAll();
+    }
+
+    public Book update(Long id, String title, String author, String isbn) {
+        Optional<Book> idFound = bookRepository.findById(id);
+
+        if (idFound.isEmpty()) {
+            throw new BookNotFoundException("Book with ID: " + id + "not found.");
+        }
+
+        Optional<Book> isbnFound = bookRepository.findByIsbn(isbn);
+
+        if (isbnFound.isPresent()) {
+            Book book = isbnFound.get();
+
+            if (!book.getId().equals(id)) {
+                throw new DuplicateIsbnException("Book with ISBN " + isbn + " already exists");
+            }
+        }
+
+        return bookRepository.update(id , title, author, isbn);
     }
 }
 

@@ -28,7 +28,6 @@ public class JdbcBookRepository implements BookRepository {
             ps.setString(3, book.getIsbn());
             ps.setBoolean(4, book.isAvailable());
 
-
             int rowsAffected = ps.executeUpdate();
 
             if (rowsAffected != 1) {

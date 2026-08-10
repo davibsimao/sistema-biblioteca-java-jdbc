@@ -2,7 +2,9 @@ package com.davi.library.service;
 
 import com.davi.library.connection.ConnectionFactory;
 import com.davi.library.domain.Book;
+import com.davi.library.exception.BookNotFoundException;
 import com.davi.library.exception.DuplicateIsbnException;
+import com.davi.library.repository.BookRepository;
 import com.davi.library.repository.JdbcBookRepository;
 import org.junit.jupiter.api.Test;
 
@@ -127,10 +129,81 @@ public class BookServiceTest {
 
         assertTrue(findAll.stream()
                 .anyMatch(b -> b.getId().equals(bookSaved2.getId())));
+    }
+
+    @Test
+    void shouldUpdateBook() {
+        ConnectionFactory connectionFactory = new ConnectionFactory();
+        BookRepository repository = new JdbcBookRepository(connectionFactory);
+        BookService bookService = new BookService(repository);
+
+        Book book = new Book("Old book", "Old author", "1000000001");
+
+        Book savedBook = repository.save(book);
+
+        Book updatedBook = bookService.update
+                (savedBook.getId(), "New title", "New author", "1000000002");
+
+        assertEquals(savedBook.getId(), updatedBook.getId());
+        assertEquals("New title",updatedBook.getTitle() );
+        assertEquals("New author", updatedBook.getAuthor());
+        assertEquals("1000000002", updatedBook.getIsbn());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenUpdatingNonExistingBook() {
+        ConnectionFactory connectionFactory = new ConnectionFactory();
+        BookRepository repository = new JdbcBookRepository(connectionFactory);
+        BookService bookService = new BookService(repository);
+
+        assertThrows(BookNotFoundException.class,
+                () -> bookService.update(999999L, "title", "author", "1000000003"));
 
     }
 
+    @Test
+    void shouldThrowExceptionWhenUpdatingWithDuplicateIsbn() {
+        ConnectionFactory connectionFactory = new ConnectionFactory();
+        JdbcBookRepository repository = new JdbcBookRepository(connectionFactory);
+        BookService bookService = new BookService(repository);
+
+        Book book1 = new Book("Book 1", "Author 1", "1000000004");
+        Book book2 = new Book("Book 2", "Author 2", "1000000005");
+
+        Book savedBook1 = repository.save(book1);
+        Book savedBook2 = repository.save(book2);
+
+        assertThrows(DuplicateIsbnException.class,
+                () -> bookService.update(savedBook1.getId(), "Updated title", "Updated author", savedBook2.getIsbn()));
 
 
+    }
+
+    @Test
+    void shouldUpdateBookKeepingItsOwnIsbn() {
+        ConnectionFactory connectionFactory = new ConnectionFactory();
+        JdbcBookRepository repository = new JdbcBookRepository(connectionFactory);
+        BookService bookService = new BookService(repository);
+
+        Book book = new Book(
+                "Old Title",
+                "Old Author",
+                "1000000006"
+        );
+
+        Book savedBook = repository.save(book);
+
+        Book updatedBook = bookService.update(
+                savedBook.getId(),
+                "New Title",
+                "New Author",
+                savedBook.getIsbn()
+        );
+
+        assertEquals(savedBook.getId(), updatedBook.getId());
+        assertEquals("New Title", updatedBook.getTitle());
+        assertEquals("New Author", updatedBook.getAuthor());
+        assertEquals(savedBook.getIsbn(), updatedBook.getIsbn());
+    }
 
 }
