@@ -2,6 +2,7 @@ package com.davi.library.service;
 
 import com.davi.library.domain.Book;
 import com.davi.library.exception.DuplicateIsbnException;
+import com.davi.library.exception.InvalidIsbnFormatException;
 import com.davi.library.repository.BookRepository;
 
 import java.util.Optional;
@@ -29,9 +30,8 @@ public class BookService {
         return bookRepository.findById(id);
     }
 
-    
-
-
-
-
+    public Optional<Book> findByIsbn(String isbn) {
+        return bookRepository.findByIsbn(isbn);
+    }
 }
+

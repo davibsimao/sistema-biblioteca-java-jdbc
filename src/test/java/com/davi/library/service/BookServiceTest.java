@@ -68,4 +68,35 @@ public class BookServiceTest {
 
         assertTrue(result.isEmpty());
     }
+
+    @Test
+    void shouldFindBookByIsbn () {
+        ConnectionFactory connectionFactory = new ConnectionFactory();
+        JdbcBookRepository repository = new JdbcBookRepository(connectionFactory);
+        BookService bookService = new BookService(repository);
+
+        Book book = new Book("titleBookIsbnTest", "authorBookIsbnTest", "isbnBookIsbnTest");
+
+        Book savedBook = repository.save(book);
+
+        Optional<Book> result = bookService.findByIsbn(savedBook.getIsbn());
+
+        assertTrue(result.isPresent());
+        assertEquals(savedBook.getIsbn(), result.get().getIsbn());
+        assertEquals(savedBook.getId(), result.get().getId());
+        assertEquals(savedBook.getTitle(), result.get().getTitle());
+        assertEquals(savedBook.getAuthor(), result.get().getAuthor());
+    }
+
+    @Test
+    void shouldReturnEmptyWhenBookIsbnDoesNotExist() {
+        ConnectionFactory connectionFactory = new ConnectionFactory();
+        JdbcBookRepository repository = new JdbcBookRepository(connectionFactory);
+        BookService bookService = new BookService(repository);
+        Optional<Book> result = bookService.findByIsbn("1111111doesNotExist");
+
+        assertTrue(result.isEmpty());
+    }
+
+
 }
