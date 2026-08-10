@@ -60,5 +60,20 @@ public class BookService {
 
         return bookRepository.update(id , title, author, isbn);
     }
+
+    public Book delete (Long id) {
+        Optional<Book> idFound = bookRepository.findById(id);
+
+        if (idFound.isEmpty()) {
+            throw new BookNotFoundException("Book with ID: " + id + "not found.");
+        }
+
+        Book book = idFound.get();
+
+        bookRepository.delete(id);
+
+        return book;
+
+    }
 }
 

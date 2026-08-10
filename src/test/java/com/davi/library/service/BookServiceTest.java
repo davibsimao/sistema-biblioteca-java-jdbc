@@ -62,6 +62,7 @@ public class BookServiceTest {
         assertEquals(savedBook.getAuthor(), result.get().getAuthor());
         assertEquals(savedBook.getIsbn(), result.get().getIsbn());
     }
+
     @Test
     void shouldReturnEmptyWhenBookDoesNotExist() {
         ConnectionFactory connectionFactory = new ConnectionFactory();
@@ -73,7 +74,7 @@ public class BookServiceTest {
     }
 
     @Test
-    void shouldFindBookByIsbn () {
+    void shouldFindBookByIsbn() {
         ConnectionFactory connectionFactory = new ConnectionFactory();
         JdbcBookRepository repository = new JdbcBookRepository(connectionFactory);
         BookService bookService = new BookService(repository);
@@ -102,7 +103,7 @@ public class BookServiceTest {
     }
 
     @Test
-    void shouldFindAllBooks () {
+    void shouldFindAllBooks() {
         ConnectionFactory connectionFactory = new ConnectionFactory();
         JdbcBookRepository repository = new JdbcBookRepository(connectionFactory);
         BookService bookService = new BookService(repository);
@@ -145,7 +146,7 @@ public class BookServiceTest {
                 (savedBook.getId(), "New title", "New author", "1000000002");
 
         assertEquals(savedBook.getId(), updatedBook.getId());
-        assertEquals("New title",updatedBook.getTitle() );
+        assertEquals("New title", updatedBook.getTitle());
         assertEquals("New author", updatedBook.getAuthor());
         assertEquals("1000000002", updatedBook.getIsbn());
     }
@@ -206,4 +207,38 @@ public class BookServiceTest {
         assertEquals(savedBook.getIsbn(), updatedBook.getIsbn());
     }
 
+    @Test
+    void shouldDeleteBook() {
+        ConnectionFactory connectionFactory = new ConnectionFactory();
+        BookRepository repository = new JdbcBookRepository(connectionFactory);
+        BookService bookService = new BookService(repository);
+
+        Book book = new Book("Book to delete", "Author", "2000000001");
+
+        Book savedBook = repository.save(book);
+
+        Book deletedBook = bookService.delete(savedBook.getId());
+
+        assertNotNull(deletedBook);
+
+        assertEquals(savedBook.getId(), deletedBook.getId());
+        assertEquals(savedBook.getTitle(), deletedBook.getTitle());
+        assertEquals(savedBook.getAuthor(), deletedBook.getAuthor());
+        assertEquals(savedBook.getIsbn(), deletedBook.getIsbn());
+
+        Optional<Book> result = repository.findById(savedBook.getId());
+
+        assertTrue(result.isEmpty());
+
+    }
+
+    @Test
+    void shouldThrowExceptionWhenDeletingNonExistingBook() {
+        ConnectionFactory connectionFactory = new ConnectionFactory();
+        BookRepository repository = new JdbcBookRepository(connectionFactory);
+        BookService bookService = new BookService(repository);
+
+        assertThrows(BookNotFoundException.class,
+                () -> bookService.delete(1999999L));
+    }
 }
