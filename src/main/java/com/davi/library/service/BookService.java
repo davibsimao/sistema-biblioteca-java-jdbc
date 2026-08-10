@@ -5,6 +5,8 @@ import com.davi.library.exception.DuplicateIsbnException;
 import com.davi.library.exception.InvalidIsbnFormatException;
 import com.davi.library.repository.BookRepository;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 public class BookService {
@@ -32,6 +34,10 @@ public class BookService {
 
     public Optional<Book> findByIsbn(String isbn) {
         return bookRepository.findByIsbn(isbn);
+    }
+
+    public List<Book> findAll() {
+        return bookRepository.findAll();
     }
 }
 

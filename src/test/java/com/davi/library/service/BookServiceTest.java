@@ -6,6 +6,7 @@ import com.davi.library.exception.DuplicateIsbnException;
 import com.davi.library.repository.JdbcBookRepository;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -97,6 +98,39 @@ public class BookServiceTest {
 
         assertTrue(result.isEmpty());
     }
+
+    @Test
+    void shouldFindAllBooks () {
+        ConnectionFactory connectionFactory = new ConnectionFactory();
+        JdbcBookRepository repository = new JdbcBookRepository(connectionFactory);
+        BookService bookService = new BookService(repository);
+
+        Book book1 = new Book("titleBookTest1", "authorBookTest1", "isbnBookTest1");
+        Book book2 = new Book("titleBookTest2", "authorBookTest2", "isbnBookTest2");
+
+        Book bookSaved1 = repository.save(book1);
+        Book bookSaved2 = repository.save(book2);
+
+        List<Book> findAll = bookService.findAll();
+
+        assertNotNull(findAll);
+        assertTrue(findAll.size() >= 2);
+
+        assertTrue(findAll.stream()
+                .anyMatch(b -> b.getIsbn().equals(bookSaved1.getIsbn())));
+
+        assertTrue(findAll.stream()
+                .anyMatch(b -> b.getIsbn().equals(bookSaved2.getIsbn())));
+
+        assertTrue(findAll.stream()
+                .anyMatch(b -> b.getId().equals(bookSaved1.getId())));
+
+        assertTrue(findAll.stream()
+                .anyMatch(b -> b.getId().equals(bookSaved2.getId())));
+
+    }
+
+
 
 
 }
