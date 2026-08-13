@@ -7,6 +7,8 @@ import com.davi.library.exception.ReaderNotFoundException;
 import com.davi.library.repository.JdbcReaderRepository;
 import org.junit.jupiter.api.Test;
 
+import java.util.Optional;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 public class ReaderServiceTest {
@@ -64,5 +66,35 @@ public class ReaderServiceTest {
 
         assertThrows(ReaderNotFoundException.class,
                 () -> readerService.findById(999999L));
+    }
+
+    @Test
+    void shouldFindReaderByEmail() {
+        ConnectionFactory connectionFactory = new ConnectionFactory();
+        JdbcReaderRepository repository = new JdbcReaderRepository(connectionFactory);
+        ReaderService readerService = new ReaderService(repository);
+
+        Reader reader = readerService.create("ReaderFindByEmailServiceTest", "readerFindByEmailServiceTest@gmail.com");
+
+        Optional<Reader> result = readerService.findByEmail(reader.getEmail());
+
+        assertTrue(result.isPresent());
+
+        Reader foundReader = result.get();
+
+        assertEquals(reader.getId(), foundReader.getId());
+        assertEquals(reader.getName(), foundReader.getName());
+        assertEquals(reader.getEmail(), foundReader.getEmail());
+    }
+
+    @Test
+    void shouldReturnEmptyWhenReaderEmailDoesNotExist() {
+        ConnectionFactory connectionFactory = new ConnectionFactory();
+        JdbcReaderRepository repository = new JdbcReaderRepository(connectionFactory);
+        ReaderService readerService = new ReaderService(repository);
+
+        Optional<Reader> result = readerService.findByEmail("readerEmailDoesNotExistServiceTest@gmail.com");
+
+        assertTrue(result.isEmpty());
     }
 }

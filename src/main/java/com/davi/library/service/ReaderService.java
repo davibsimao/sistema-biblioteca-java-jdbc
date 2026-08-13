@@ -34,4 +34,8 @@ public class ReaderService {
 
         return idFound.get();
     }
+
+    public Optional<Reader> findByEmail(String email) {
+        return readerRepository.findByEmail(email);
+    }
 }
