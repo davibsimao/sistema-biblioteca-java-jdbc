@@ -3,6 +3,7 @@ package com.davi.library.repository;
 import com.davi.library.connection.ConnectionFactory;
 import com.davi.library.domain.Book;
 import com.davi.library.domain.Reader;
+import com.davi.library.exception.DataAccessException;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -112,6 +113,34 @@ JdbcReaderRepositoryIntegrationTest {
 
         assertTrue(containsReader1);
         assertTrue(containsReader2);
+    }
+
+    @Test
+    void shouldDeleteReader() {
+        ConnectionFactory connectionFactory = new ConnectionFactory();
+        JdbcReaderRepository repository = new JdbcReaderRepository(connectionFactory);
+
+        Reader reader = new Reader("nameDeleteTest", "emailDeleteTest@gmail.com");
+
+        Reader savedReader = repository.save(reader);
+
+        repository.delete(savedReader.getId());
+
+        Optional<Reader> result = repository.findByEmail(savedReader.getEmail());
+
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenDeletingNonExistentReader() {
+        ConnectionFactory connectionFactory = new ConnectionFactory();
+        JdbcReaderRepository repository = new JdbcReaderRepository(connectionFactory);
+
+        Long nonExistentId = 999999L;
+
+        assertThrows(DataAccessException.class,
+                () -> repository.delete(nonExistentId));
+
     }
 
 }

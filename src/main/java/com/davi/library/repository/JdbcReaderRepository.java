@@ -116,4 +116,22 @@ public class JdbcReaderRepository implements ReaderRepository{
         }
         return readers;
     }
+
+    @Override
+    public void delete(Long id) {
+        String sql = "DELETE FROM readers WHERE id = ?";
+        try (Connection conn = connectionFactory.getConnection();
+        PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, id);
+
+            int rowsAffected = ps.executeUpdate();
+
+            if (rowsAffected == 0) {
+                throw new DataAccessException("Reader not found with id: " + id);
+            }
+
+        } catch (SQLException e) {
+            throw new DataAccessException("Failed to delete readers", e);
+        }
+    }
 }

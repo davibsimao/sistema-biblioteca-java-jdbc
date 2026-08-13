@@ -14,4 +14,6 @@ public interface ReaderRepository {
     Optional<Reader> findByEmail(String email);
 
     List<Reader> findAll();
+
+    void delete (Long id);
 }
