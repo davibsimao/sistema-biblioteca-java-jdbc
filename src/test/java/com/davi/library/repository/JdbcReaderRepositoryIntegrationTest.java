@@ -1,8 +1,11 @@
 package com.davi.library.repository;
 
 import com.davi.library.connection.ConnectionFactory;
+import com.davi.library.domain.Book;
 import com.davi.library.domain.Reader;
 import org.junit.jupiter.api.Test;
+
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -23,6 +26,36 @@ JdbcReaderRepositoryIntegrationTest {
 
         assertEquals("davi", savedReader.getName());
         assertEquals("chatgpt@gmail.com", savedReader.getEmail());
+    }
+
+    @Test
+    void shouldFindReaderById() {
+        ConnectionFactory connectionFactory = new ConnectionFactory();
+        JdbcReaderRepository repository = new JdbcReaderRepository(connectionFactory);
+
+        Reader reader = new Reader("nametest", "nametest00@gmail.com");
+
+        Reader savedReader = repository.save(reader);
+
+        Optional<Reader> result = repository.findById(savedReader.getId());
+
+        assertTrue(result.isPresent());
+
+        Reader found = result.get();
+
+        assertEquals(savedReader.getId(), found.getId());
+        assertEquals("nametest", found.getName());
+        assertEquals("nametest00@gmail.com", found.getEmail());
+    }
+
+    @Test
+    void shouldReturnEmptyWhenReaderIdDoesNotExist() {
+        ConnectionFactory connectionFactory = new ConnectionFactory();
+        JdbcReaderRepository repository = new JdbcReaderRepository(connectionFactory);
+
+        Optional<Reader> result = repository.findById(999999L);
+
+        assertTrue(result.isEmpty());
     }
 
 }

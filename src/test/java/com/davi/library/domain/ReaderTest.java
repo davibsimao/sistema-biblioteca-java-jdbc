@@ -68,8 +68,4 @@ public class ReaderTest {
         assertEquals("davi", readerRestore.getName());
         assertEquals("davi@gmail.com", readerRestore.getEmail());
     }
-
-
-
-
 }

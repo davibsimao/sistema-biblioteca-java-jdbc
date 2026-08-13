@@ -5,6 +5,7 @@ import com.davi.library.domain.Reader;
 import com.davi.library.exception.DataAccessException;
 
 import java.sql.*;
+import java.util.Optional;
 
 public class JdbcReaderRepository implements ReaderRepository{
     private final ConnectionFactory connectionFactory;
@@ -40,5 +41,30 @@ public class JdbcReaderRepository implements ReaderRepository{
         }
 
         throw new DataAccessException("Failed to save reader: generated id not returned");
+    }
+
+    @Override
+    public Optional<Reader> findById(Long id) {
+        String sql = "SELECT id, name, email FROM readers WHERE id = ? ";
+        try (Connection conn = connectionFactory.getConnection();
+        PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, id);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Reader readerRestore = Reader.restore(
+                            rs.getLong("id"),
+                            rs.getString("name"),
+                            rs.getString("email"));
+
+                    return Optional.of(readerRestore);
+                }
+            }
+
+        } catch (SQLException e) {
+            throw new DataAccessException("Failed to find reader by id", e);
+        }
+
+        return Optional.empty();
     }
 }
