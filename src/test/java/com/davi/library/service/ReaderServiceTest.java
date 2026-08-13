@@ -3,6 +3,7 @@ package com.davi.library.service;
 import com.davi.library.connection.ConnectionFactory;
 import com.davi.library.domain.Reader;
 import com.davi.library.exception.DuplicateEmailException;
+import com.davi.library.exception.ReaderNotFoundException;
 import com.davi.library.repository.JdbcReaderRepository;
 import org.junit.jupiter.api.Test;
 
@@ -38,5 +39,30 @@ public class ReaderServiceTest {
         assertThrows(DuplicateEmailException.class,
                 () -> readerService.create("NameServiceTest02", email));
 
+    }
+
+    @Test
+    void shouldFindReaderById() {
+        ConnectionFactory connectionFactory = new ConnectionFactory();
+        JdbcReaderRepository repository = new JdbcReaderRepository(connectionFactory);
+        ReaderService readerService = new ReaderService(repository);
+
+        Reader reader = readerService.create("ReaderFindByIdServiceTest", "readerFindByIdServiceTest@gmail.com");
+
+        Reader foundReader = readerService.findById(reader.getId());
+
+        assertEquals(reader.getId(), foundReader.getId());
+        assertEquals(reader.getName(), foundReader.getName());
+        assertEquals(reader.getEmail(), foundReader.getEmail());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenFindingNonExistentReader() {
+        ConnectionFactory connectionFactory = new ConnectionFactory();
+        JdbcReaderRepository repository = new JdbcReaderRepository(connectionFactory);
+        ReaderService readerService = new ReaderService(repository);
+
+        assertThrows(ReaderNotFoundException.class,
+                () -> readerService.findById(999999L));
     }
 }
