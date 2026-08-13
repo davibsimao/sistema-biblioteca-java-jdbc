@@ -143,4 +143,51 @@ JdbcReaderRepositoryIntegrationTest {
 
     }
 
+    @Test
+    void shouldUpdateReader() {
+        ConnectionFactory connectionFactory = new ConnectionFactory();
+        JdbcReaderRepository repository = new JdbcReaderRepository(connectionFactory);
+
+        Reader reader = new Reader("ReaderUpdateName01", "readerUpdate01Unique@gmail.com");
+
+        Reader savedReader = repository.save(reader);
+
+        Reader updatedReader = repository.update(savedReader.getId(), "ReaderUpdatedName01", "readerUpdated01Unique@gmail.com");
+
+        assertEquals(savedReader.getId(), updatedReader.getId());
+        assertEquals("ReaderUpdatedName01", updatedReader.getName());
+        assertEquals("readerUpdated01Unique@gmail.com", updatedReader.getEmail());
+
+    }
+
+    @Test
+    void shouldThrowExceptionWhenUpdatingNonExistentReader() {
+        ConnectionFactory connectionFactory = new ConnectionFactory();
+        JdbcReaderRepository repository = new JdbcReaderRepository(connectionFactory);
+
+        assertThrows(DataAccessException.class,
+                () -> repository.update(999999L, "ReaderNonExistent01", "readerNonExistent01Unique@gmail.com"));
+
+    }
+
+    @Test
+    void shouldPersistUpdatedReader() {
+        ConnectionFactory connectionFactory = new ConnectionFactory();
+        JdbcReaderRepository repository = new JdbcReaderRepository(connectionFactory);
+
+        Reader reader = new Reader("ReaderPersistName01", "readerPersistOld01Unique@gmail.com");
+
+        Reader savedReader = repository.save(reader);
+
+        repository.update(savedReader.getId(), "ReaderPersistUpdated01", "readerPersistNew01Unique@gmail.com");
+
+        Optional<Reader> result = repository.findById(savedReader.getId());
+
+        assertTrue(result.isPresent());
+
+        Reader foundReader = result.get();
+
+        assertEquals("ReaderPersistUpdated01", foundReader.getName());
+        assertEquals("readerPersistNew01Unique@gmail.com", foundReader.getEmail());
+    }
 }

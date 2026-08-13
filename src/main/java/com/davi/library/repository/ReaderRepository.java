@@ -16,4 +16,6 @@ public interface ReaderRepository {
     List<Reader> findAll();
 
     void delete (Long id);
+
+    Reader update(Long id, String name, String email);
 }

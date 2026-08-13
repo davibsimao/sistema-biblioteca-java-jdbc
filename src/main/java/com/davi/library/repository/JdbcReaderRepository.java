@@ -134,4 +134,27 @@ public class JdbcReaderRepository implements ReaderRepository{
             throw new DataAccessException("Failed to delete readers", e);
         }
     }
+
+    @Override
+    public Reader update(Long id, String name, String email) {
+        String sql = "UPDATE readers SET name = ?, email = ? WHERE id = ? ";
+
+        try (Connection conn = connectionFactory.getConnection();
+        PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, name);
+            ps.setString(2, email);
+            ps.setLong(3, id);
+
+            int rowsAffected = ps.executeUpdate();
+
+            if (rowsAffected != 1) {
+                throw new DataAccessException("Failed to update reader: no rows affected");
+            }
+
+            return Reader.restore(id, name, email);
+
+        } catch (SQLException e) {
+            throw new DataAccessException("Failed to update reader", e);
+        }
+    }
 }
