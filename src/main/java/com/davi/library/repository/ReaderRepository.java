@@ -9,4 +9,6 @@ public interface ReaderRepository {
     Reader save(Reader reader);
 
     Optional<Reader> findById(Long id);
+
+    Optional<Reader> findByEmail(String email);
 }

@@ -67,4 +67,29 @@ public class JdbcReaderRepository implements ReaderRepository{
 
         return Optional.empty();
     }
+
+    @Override
+    public Optional<Reader> findByEmail(String email) {
+        String sql = "SELECT id, name, email FROM readers WHERE email = ?";
+
+        try (Connection conn = connectionFactory.getConnection();
+        PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, email);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Reader readerRestore = Reader.restore(rs.getLong("id"),
+                            rs.getString("name"),
+                            rs.getString("email"));
+
+                    return Optional.of(readerRestore);
+                }
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Failed to find reader by email", e);
+        }
+
+
+        return Optional.empty();
+    }
 }

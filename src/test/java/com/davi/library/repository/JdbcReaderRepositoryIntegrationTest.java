@@ -58,4 +58,34 @@ JdbcReaderRepositoryIntegrationTest {
         assertTrue(result.isEmpty());
     }
 
+    @Test
+    void shouldFindReaderByEmail() {
+        ConnectionFactory connectionFactory = new ConnectionFactory();
+        JdbcReaderRepository repository = new JdbcReaderRepository(connectionFactory);
+
+        Reader reader = new Reader("nametest", "findReaderByEmailTest@gmail.com");
+
+        Reader savedReader = repository.save(reader);
+
+        Optional<Reader> result = repository.findByEmail(savedReader.getEmail());
+
+        assertTrue(result.isPresent());
+
+        Reader found = result.get();
+
+        assertEquals("nametest", found.getName());
+        assertEquals("findReaderByEmailTest@gmail.com", found.getEmail());
+    }
+
+    @Test
+    void shouldReturnEmptyWhenReaderEmailDoesNotExist() {
+        ConnectionFactory connectionFactory = new ConnectionFactory();
+        JdbcReaderRepository repository = new JdbcReaderRepository(connectionFactory);
+
+        Optional<Reader> result = repository.findByEmail("ajofoaaofkam@gmail.com");
+
+        assertTrue(result.isEmpty());
+
+    }
+
 }
