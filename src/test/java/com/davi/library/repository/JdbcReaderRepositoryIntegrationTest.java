@@ -5,6 +5,7 @@ import com.davi.library.domain.Book;
 import com.davi.library.domain.Reader;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -85,7 +86,32 @@ JdbcReaderRepositoryIntegrationTest {
         Optional<Reader> result = repository.findByEmail("ajofoaaofkam@gmail.com");
 
         assertTrue(result.isEmpty());
+    }
 
+    @Test
+    void shouldFindAllReaders() {
+        ConnectionFactory connectionFactory = new ConnectionFactory();
+        JdbcReaderRepository repository = new JdbcReaderRepository(connectionFactory);
+
+        Reader reader1 = new Reader("nametest01", "findAllTest01@gmail.com");
+        Reader reader2 = new Reader("nametest02", "findAllTest02@gmail.com");
+
+        Reader savedReader1 = repository.save(reader1);
+        Reader savedReader2 = repository.save(reader2);
+
+        List<Reader> findAll = repository.findAll();
+
+        assertNotNull(findAll);
+        assertTrue(findAll.size() >= 2);
+
+        boolean containsReader1 = findAll.stream()
+                .anyMatch(r -> r.getEmail().equals(savedReader1.getEmail()));
+
+        boolean containsReader2 = findAll.stream()
+                .anyMatch(r -> r.getEmail().equals(savedReader2.getEmail()));
+
+        assertTrue(containsReader1);
+        assertTrue(containsReader2);
     }
 
 }

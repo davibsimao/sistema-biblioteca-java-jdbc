@@ -5,6 +5,8 @@ import com.davi.library.domain.Reader;
 import com.davi.library.exception.DataAccessException;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 public class JdbcReaderRepository implements ReaderRepository{
@@ -89,7 +91,29 @@ public class JdbcReaderRepository implements ReaderRepository{
             throw new DataAccessException("Failed to find reader by email", e);
         }
 
-
         return Optional.empty();
+    }
+
+    @Override
+    public List<Reader> findAll() {
+        String sql = "SELECT id, name, email FROM readers";
+
+        List<Reader> readers = new ArrayList<>();
+        try (Connection conn = connectionFactory.getConnection();
+        PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Reader readerRestore = Reader.restore(rs.getLong("id"),
+                            rs.getString("name"),
+                            rs.getString("email"));
+
+                    readers.add(readerRestore);
+                }
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Failed to find readers", e);
+        }
+        return readers;
     }
 }
