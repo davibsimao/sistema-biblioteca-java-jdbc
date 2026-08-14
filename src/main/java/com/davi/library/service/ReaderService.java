@@ -2,6 +2,7 @@ package com.davi.library.service;
 
 import com.davi.library.domain.Reader;
 import com.davi.library.exception.DuplicateEmailException;
+import com.davi.library.exception.DuplicateIsbnException;
 import com.davi.library.exception.ReaderNotFoundException;
 import com.davi.library.repository.ReaderRepository;
 
@@ -30,7 +31,6 @@ public class ReaderService {
 
         if (idFound.isEmpty()) {
             throw new ReaderNotFoundException("Reader with ID: " + id + "not found.");
-
         }
 
         return idFound.get();
@@ -43,5 +43,24 @@ public class ReaderService {
     public List<Reader> findAll() {
         return readerRepository.findAll();
 
+    }
+
+    public Reader update(Long id, String name, String email) {
+        Optional<Reader> idFound = readerRepository.findById(id);
+
+        if (idFound.isEmpty()) {
+            throw new ReaderNotFoundException("Reader with ID: " + id + " not found.");
+        }
+
+        Optional<Reader> emailFound = readerRepository.findByEmail(email);
+
+        if (emailFound.isPresent()) {
+            Reader reader = emailFound.get();
+
+            if (!reader.getId().equals(id)) {
+                throw new DuplicateEmailException("Reader with EMAIL " + email + " already exists");
+            }
+        }
+        return readerRepository.update(id, name, email);
     }
 }

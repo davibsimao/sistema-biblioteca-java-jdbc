@@ -122,4 +122,61 @@ public class ReaderServiceTest {
         assertTrue(containsReader1);
         assertTrue(containsReader2);
     }
+
+    @Test
+    void shouldUpdateReader() {
+        ConnectionFactory connectionFactory = new ConnectionFactory();
+        JdbcReaderRepository jdbcReaderRepository = new JdbcReaderRepository(connectionFactory);
+        ReaderService readerService = new ReaderService(jdbcReaderRepository);
+
+        Reader reader = readerService.create("ReaderServiceUpdateName01", "readerServiceUpdateOld01@gmail.com");
+
+        Reader updatedReader = readerService.update(reader.getId(), "ReaderServiceUpdatedName01", "readerServiceUpdateNew01@gmail.com");
+
+        assertEquals("ReaderServiceUpdatedName01", updatedReader.getName());
+
+        assertEquals("readerServiceUpdateNew01@gmail.com", updatedReader.getEmail());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenUpdatingNonExistentReader() {
+        ConnectionFactory connectionFactory = new ConnectionFactory();
+        JdbcReaderRepository jdbcReaderRepository = new JdbcReaderRepository(connectionFactory);
+        ReaderService readerService = new ReaderService(jdbcReaderRepository);
+
+        assertThrows(ReaderNotFoundException.class,
+                () -> readerService.update(9999999L, "ReaderNonExistentServiceTest", "readerNonExistentServiceTest@gmail.com"));
+    }
+
+    @Test
+    void shouldThrowExceptionWhenUpdatingWithDuplicateEmail() {
+        ConnectionFactory connectionFactory = new ConnectionFactory();
+        JdbcReaderRepository jdbcReaderRepository = new JdbcReaderRepository(connectionFactory);
+        ReaderService readerService = new ReaderService(jdbcReaderRepository);
+
+        String email = "readerDuplicateEmailServiceTest@gmail.com";
+
+        Reader reader1 = readerService.create("ReaderDuplicateEmail01", "readerDuplicateEmail01@gmail.com");
+
+        readerService.create("ReaderDuplicateEmail02", email);
+
+        assertThrows(DuplicateEmailException.class,
+                () -> readerService.update(reader1.getId(), "ReaderDuplicateEmail", email));
+
+    }
+
+    @Test
+    void shouldUpdateReaderKeepingItsOwnEmail() {
+        ConnectionFactory connectionFactory = new ConnectionFactory();
+        JdbcReaderRepository repository = new JdbcReaderRepository(connectionFactory);
+        ReaderService readerService = new ReaderService(repository);
+
+        Reader reader = readerService.create("ReaderKeepEmailServiceTest", "readerKeepEmailServiceTest@gmail.com");
+
+        Reader updatedReader = readerService.update(reader.getId(), "ReaderKeepEmailUpdated", reader.getEmail());
+
+        assertEquals(reader.getId(), updatedReader.getId());
+        assertEquals("ReaderKeepEmailUpdated", updatedReader.getName());
+        assertEquals(reader.getEmail(), updatedReader.getEmail());
+    }
 }
