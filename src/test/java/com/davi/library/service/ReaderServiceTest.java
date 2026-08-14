@@ -179,4 +179,34 @@ public class ReaderServiceTest {
         assertEquals("ReaderKeepEmailUpdated", updatedReader.getName());
         assertEquals(reader.getEmail(), updatedReader.getEmail());
     }
+
+    @Test
+    void shouldDeleteReader() {
+        ConnectionFactory connectionFactory = new ConnectionFactory();
+        JdbcReaderRepository repository = new JdbcReaderRepository(connectionFactory);
+        ReaderService readerService = new ReaderService(repository);
+
+        Reader reader = readerService.create("ReaderDeleteTest01", "ReaderDeleteTest01@gmail.com");
+
+        Reader deletedReader = readerService.delete(reader.getId());
+
+        assertNotNull(deletedReader);
+
+        assertEquals(reader.getId(), deletedReader.getId());
+        assertEquals(reader.getName(), deletedReader.getName());
+        assertEquals(reader.getEmail(), deletedReader.getEmail());
+
+        assertThrows(ReaderNotFoundException.class,
+                () -> readerService.findById(reader.getId()));
+    }
+
+    @Test
+    void shouldThrowExceptionWhenDeletingNonExistentReader() {
+        ConnectionFactory connectionFactory = new ConnectionFactory();
+        JdbcReaderRepository repository = new JdbcReaderRepository(connectionFactory);
+        ReaderService readerService = new ReaderService(repository);
+
+        assertThrows(ReaderNotFoundException.class,
+                () -> readerService.delete(999999999L));
+    }
 }
