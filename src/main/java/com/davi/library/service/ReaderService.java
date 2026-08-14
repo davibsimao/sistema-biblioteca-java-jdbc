@@ -5,6 +5,7 @@ import com.davi.library.exception.DuplicateEmailException;
 import com.davi.library.exception.ReaderNotFoundException;
 import com.davi.library.repository.ReaderRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 public class ReaderService {
@@ -37,5 +38,10 @@ public class ReaderService {
 
     public Optional<Reader> findByEmail(String email) {
         return readerRepository.findByEmail(email);
+    }
+
+    public List<Reader> findAll() {
+        return readerRepository.findAll();
+
     }
 }
