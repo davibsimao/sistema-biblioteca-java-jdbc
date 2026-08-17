@@ -6,6 +6,8 @@ import com.davi.library.domain.LoanStatus;
 import com.davi.library.exception.DataAccessException;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 public class JdbcLoanRepository implements LoanRepository{
@@ -68,5 +70,31 @@ public class JdbcLoanRepository implements LoanRepository{
         }
 
         return Optional.empty();
+    }
+
+    @Override
+    public List<Loan> findAll() {
+        String sql = "SELECT id, book_id, reader_id, status FROM loans";
+
+        List<Loan> loans = new ArrayList<>();
+
+        try (Connection conn = connectionFactory.getConnection();
+        PreparedStatement ps = conn.prepareStatement(sql)) {
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Loan loanRestored = Loan.restore(
+                            rs.getLong("id"),
+                            rs.getLong("book_id"),
+                            rs.getLong("reader_id"),
+                            LoanStatus.valueOf(rs.getString("status")));
+
+                    loans.add(loanRestored);
+                }
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Failed to find loans", e);
+        }
+
+        return loans;
     }
 }
