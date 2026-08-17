@@ -187,5 +187,40 @@ public class JdbcLoanRepositoryIntegrationTest {
         assertEquals(savedReader.getId(), foundLoan.getReaderId());
     }
 
+    @Test
+    void shouldFindLoansByStatus() {
+        ConnectionFactory connectionFactory = new ConnectionFactory();
 
+        JdbcBookRepository bookRepository = new JdbcBookRepository(connectionFactory);
+        JdbcReaderRepository readerRepository = new JdbcReaderRepository(connectionFactory);
+        JdbcLoanRepository loanRepository = new JdbcLoanRepository(connectionFactory);
+
+        Book book1 = new Book("FindByStatus Book 01", "FindByStatus Author 01", "9780000000007");
+        Book book2 = new Book("FindByStatus Book 02", "FindByStatus Author 02", "9780000000008");
+
+        Reader reader1 = new Reader("FindByStatus Reader 01", "findByStatusReader01@gmail.com");
+        Reader reader2 = new Reader("FindByStatus Reader 02", "findByStatusReader02@gmail.com");
+
+        Book savedBook1 = bookRepository.save(book1);
+        Book savedBook2 = bookRepository.save(book2);
+
+        Reader savedReader1 = readerRepository.save(reader1);
+        Reader savedReader2 = readerRepository.save(reader2);
+
+        Loan activeLoan = loanRepository.save(new Loan(savedBook1.getId(), savedReader1.getId()));
+        Loan loanToReturn = loanRepository.save(new Loan(savedBook2.getId(), savedReader2.getId()));
+
+        Loan returnedLoan = loanRepository.updateStatus(loanToReturn.getId(), RETURNED);
+
+        List<Loan> activeLoans = loanRepository.findByStatus(ACTIVE);
+        List<Loan> returnedLoans = loanRepository.findByStatus(RETURNED);
+
+        assertNotNull(activeLoans);
+        assertTrue(activeLoans.stream().anyMatch(l -> l.getId().equals(activeLoan.getId())));
+
+        assertNotNull(returnedLoans);
+        assertTrue(returnedLoans.stream().anyMatch(l -> l.getId().equals(returnedLoan.getId())));
+
+        assertTrue(activeLoans.stream().noneMatch(l -> l.getId().equals(returnedLoan.getId())));
+    }
 }

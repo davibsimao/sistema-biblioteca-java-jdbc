@@ -13,5 +13,7 @@ public interface LoanRepository {
 
     List<Loan> findAll();
 
+    List<Loan> findByStatus(LoanStatus status);
+
     Loan updateStatus(Long id, LoanStatus newStatus);
 }

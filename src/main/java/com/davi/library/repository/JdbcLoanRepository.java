@@ -10,10 +10,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class JdbcLoanRepository implements LoanRepository{
+public class JdbcLoanRepository implements LoanRepository {
     private final ConnectionFactory connectionFactory;
 
-    public JdbcLoanRepository(ConnectionFactory connectionFactory) {this.connectionFactory = connectionFactory;}
+    public JdbcLoanRepository(ConnectionFactory connectionFactory) {
+        this.connectionFactory = connectionFactory;
+    }
 
     @Override
     public Loan save(Loan loan) {
@@ -50,7 +52,7 @@ public class JdbcLoanRepository implements LoanRepository{
         String sql = "SELECT id, book_id, reader_id, status FROM loans WHERE id = ?";
 
         try (Connection conn = connectionFactory.getConnection();
-        PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, id);
 
             try (ResultSet rs = ps.executeQuery()) {
@@ -79,7 +81,7 @@ public class JdbcLoanRepository implements LoanRepository{
         List<Loan> loans = new ArrayList<>();
 
         try (Connection conn = connectionFactory.getConnection();
-        PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = conn.prepareStatement(sql)) {
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     Loan loanRestored = Loan.restore(
@@ -120,5 +122,30 @@ public class JdbcLoanRepository implements LoanRepository{
         } catch (SQLException e) {
             throw new DataAccessException("Failed to update loan status", e);
         }
+    }
+
+    @Override
+    public List<Loan> findByStatus(LoanStatus status) {
+        String sql = "SELECT id, book_id, reader_id, status FROM loans WHERE status = ?";
+
+        List<Loan> loans = new ArrayList<>();
+        try (Connection conn = connectionFactory.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, status.name());
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Loan loanRestored = Loan.restore(rs.getLong("id"),
+                            rs.getLong("book_id"),
+                            rs.getLong("reader_id"),
+                            LoanStatus.valueOf(rs.getString("status")));
+
+                    loans.add(loanRestored);
+                }
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Failed to find loan by status ", e);
+        }
+        return loans;
     }
 }
