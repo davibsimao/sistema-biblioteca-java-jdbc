@@ -154,4 +154,46 @@ public class LoanServiceTest {
 
         assertTrue(activeLoans.stream().noneMatch(loan -> loan.getId().equals(returnedLoan.getId())));
     }
+
+    @Test
+    void shouldUpdateLoanStatus() {
+        ConnectionFactory connectionFactory = new ConnectionFactory();
+
+        JdbcBookRepository bookRepository = new JdbcBookRepository(connectionFactory);
+        JdbcReaderRepository readerRepository = new JdbcReaderRepository(connectionFactory);
+        JdbcLoanRepository loanRepository = new JdbcLoanRepository(connectionFactory);
+
+        BookService bookService = new BookService(bookRepository);
+        ReaderService readerService = new ReaderService(readerRepository);
+        LoanService loanService = new LoanService(loanRepository, bookService, readerService);
+
+        Book book = bookService.create("Update Status Service Book", "Update Status Service Author", "isbnUpdateStatusServiceTest001");
+        Reader reader = readerService.create("Update Status Service Reader", "updateStatusServiceTest001@gmail.com");
+
+        Loan loan = loanService.create(book.getId(), reader.getId());
+
+        Loan updatedLoan = loanService.updateStatus(loan.getId(), RETURNED);
+
+        assertNotNull(updatedLoan);
+        assertEquals(loan.getId(), updatedLoan.getId());
+        assertEquals(book.getId(), updatedLoan.getBookId());
+        assertEquals(reader.getId(), updatedLoan.getReaderId());
+        assertEquals(RETURNED, updatedLoan.getStatus());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenUpdatingStatusOfNonExistentLoan() {
+        ConnectionFactory connectionFactory = new ConnectionFactory();
+
+        JdbcBookRepository bookRepository = new JdbcBookRepository(connectionFactory);
+        JdbcReaderRepository readerRepository = new JdbcReaderRepository(connectionFactory);
+        JdbcLoanRepository loanRepository = new JdbcLoanRepository(connectionFactory);
+
+        BookService bookService = new BookService(bookRepository);
+        ReaderService readerService = new ReaderService(readerRepository);
+        LoanService loanService = new LoanService(loanRepository, bookService, readerService);
+
+        assertThrows(LoanNotFoundException.class,
+                () -> loanService.updateStatus(999999L, RETURNED));
+    }
 }

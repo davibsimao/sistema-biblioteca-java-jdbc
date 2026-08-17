@@ -10,6 +10,8 @@ import com.davi.library.repository.LoanRepository;
 import java.util.List;
 import java.util.Optional;
 
+import static com.davi.library.domain.LoanStatus.RETURNED;
+
 public class LoanService {
 
     private final LoanRepository loanRepository;
@@ -47,5 +49,15 @@ public class LoanService {
 
     public List<Loan> findByStatus(LoanStatus status) {
         return loanRepository.findByStatus(status);
+    }
+
+    public Loan updateStatus(Long id, LoanStatus newStatus) {
+        Loan loan = findById(id);
+
+        if (loan.getStatus() == RETURNED && newStatus == RETURNED) {
+            throw new IllegalStateException("Loan is already returned");
+        }
+
+        return loanRepository.updateStatus(id, newStatus);
     }
 }
