@@ -2,6 +2,7 @@ package com.davi.library.service;
 
 import com.davi.library.domain.Book;
 import com.davi.library.domain.Loan;
+import com.davi.library.domain.LoanStatus;
 import com.davi.library.domain.Reader;
 import com.davi.library.exception.LoanNotFoundException;
 import com.davi.library.repository.LoanRepository;
@@ -41,5 +42,10 @@ public class LoanService {
     }
     public List<Loan> findAll() {
         return loanRepository.findAll();
+    }
+
+
+    public List<Loan> findByStatus(LoanStatus status) {
+        return loanRepository.findByStatus(status);
     }
 }

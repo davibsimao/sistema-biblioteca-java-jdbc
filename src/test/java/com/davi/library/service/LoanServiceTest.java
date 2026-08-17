@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 
 import static com.davi.library.domain.LoanStatus.ACTIVE;
+import static com.davi.library.domain.LoanStatus.RETURNED;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class LoanServiceTest {
@@ -117,5 +118,40 @@ public class LoanServiceTest {
 
         assertTrue(containsLoan1);
         assertTrue(containsLoan2);
+    }
+
+    @Test
+    void shouldFindLoansByStatus() {
+        ConnectionFactory connectionFactory = new ConnectionFactory();
+
+        JdbcBookRepository bookRepository = new JdbcBookRepository(connectionFactory);
+        JdbcReaderRepository readerRepository = new JdbcReaderRepository(connectionFactory);
+        JdbcLoanRepository loanRepository = new JdbcLoanRepository(connectionFactory);
+
+        BookService bookService = new BookService(bookRepository);
+        ReaderService readerService = new ReaderService(readerRepository);
+        LoanService loanService = new LoanService(loanRepository, bookService, readerService);
+
+        Book book1 = bookService.create("FindByStatus Service Book 01", "FindByStatus Service Author 01", "isbnFindByStatusServiceTest001");
+        Book book2 = bookService.create("FindByStatus Service Book 02", "FindByStatus Service Author 02", "isbnFindByStatusServiceTest002");
+
+        Reader reader1 = readerService.create("FindByStatus Service Reader 01", "findByStatusServiceTest001@gmail.com");
+        Reader reader2 = readerService.create("FindByStatus Service Reader 02", "findByStatusServiceTest002@gmail.com");
+
+        Loan activeLoan = loanService.create(book1.getId(), reader1.getId());
+        Loan loanToReturn = loanService.create(book2.getId(), reader2.getId());
+
+        Loan returnedLoan = loanRepository.updateStatus(loanToReturn.getId(), RETURNED);
+
+        List<Loan> activeLoans = loanService.findByStatus(ACTIVE);
+        List<Loan> returnedLoans = loanService.findByStatus(RETURNED);
+
+        assertNotNull(activeLoans);
+        assertTrue(activeLoans.stream().anyMatch(loan -> loan.getId().equals(activeLoan.getId())));
+
+        assertNotNull(returnedLoans);
+        assertTrue(returnedLoans.stream().anyMatch(loan -> loan.getId().equals(returnedLoan.getId())));
+
+        assertTrue(activeLoans.stream().noneMatch(loan -> loan.getId().equals(returnedLoan.getId())));
     }
 }
