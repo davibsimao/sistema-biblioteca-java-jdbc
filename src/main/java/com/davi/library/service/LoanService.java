@@ -4,6 +4,7 @@ import com.davi.library.domain.Book;
 import com.davi.library.domain.Loan;
 import com.davi.library.domain.Reader;
 import com.davi.library.exception.BookNotFoundException;
+import com.davi.library.exception.LoanNotFoundException;
 import com.davi.library.exception.ReaderNotFoundException;
 import com.davi.library.repository.LoanRepository;
 
@@ -28,5 +29,15 @@ public class LoanService {
         Loan loan = new Loan(book.getId(), reader.getId());
 
         return loanRepository.save(loan);
+    }
+
+    public Loan findById(Long id) {
+        Optional<Loan> idFound = loanRepository.findById(id);
+
+        if (idFound.isEmpty()) {
+            throw new LoanNotFoundException("Loan with ID: " + id + " not found.");
+        }
+
+        return idFound.get();
     }
 }
