@@ -3,11 +3,10 @@ package com.davi.library.service;
 import com.davi.library.domain.Book;
 import com.davi.library.domain.Loan;
 import com.davi.library.domain.Reader;
-import com.davi.library.exception.BookNotFoundException;
 import com.davi.library.exception.LoanNotFoundException;
-import com.davi.library.exception.ReaderNotFoundException;
 import com.davi.library.repository.LoanRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 public class LoanService {
@@ -39,5 +38,8 @@ public class LoanService {
         }
 
         return idFound.get();
+    }
+    public List<Loan> findAll() {
+        return loanRepository.findAll();
     }
 }
