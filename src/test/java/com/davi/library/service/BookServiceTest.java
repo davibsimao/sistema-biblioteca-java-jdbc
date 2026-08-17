@@ -54,23 +54,23 @@ public class BookServiceTest {
 
         Book book = new Book("titleBookIdTest", "authorBookIdTest", "isbnBookIdTest");
         Book savedBook = repository.save(book);
-        Optional<Book> result = bookService.findById(savedBook.getId());
 
-        assertTrue(result.isPresent());
-        assertEquals(savedBook.getId(), result.get().getId());
-        assertEquals(savedBook.getTitle(), result.get().getTitle());
-        assertEquals(savedBook.getAuthor(), result.get().getAuthor());
-        assertEquals(savedBook.getIsbn(), result.get().getIsbn());
+        Book foundBook = bookService.findById(savedBook.getId());
+
+        assertEquals(savedBook.getId(), foundBook.getId());
+        assertEquals(savedBook.getTitle(), foundBook.getTitle());
+        assertEquals(savedBook.getAuthor(), foundBook.getAuthor());
+        assertEquals(savedBook.getIsbn(), foundBook.getIsbn());
     }
 
     @Test
-    void shouldReturnEmptyWhenBookDoesNotExist() {
+    void shouldThrowExceptionWhenBookDoesNotExist() {
         ConnectionFactory connectionFactory = new ConnectionFactory();
         JdbcBookRepository repository = new JdbcBookRepository(connectionFactory);
         BookService bookService = new BookService(repository);
-        Optional<Book> result = bookService.findById(999999L);
 
-        assertTrue(result.isEmpty());
+        assertThrows(BookNotFoundException.class,
+                () -> bookService.findById(999999L));
     }
 
     @Test
