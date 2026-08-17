@@ -1,9 +1,11 @@
 package com.davi.library.service;
 
 import com.davi.library.domain.Book;
+import com.davi.library.domain.Reader;
 import com.davi.library.exception.BookNotFoundException;
 import com.davi.library.exception.DuplicateIsbnException;
 import com.davi.library.exception.InvalidIsbnFormatException;
+import com.davi.library.exception.ReaderNotFoundException;
 import com.davi.library.repository.BookRepository;
 
 import java.util.Collections;
@@ -29,13 +31,17 @@ public class BookService {
 
     }
 
-    public Optional<Book> findById(Long id) {
-        return bookRepository.findById(id);
+    public Book findById(Long id) {
+        Optional<Book> idFound = bookRepository.findById(id);
+
+        if (idFound.isEmpty()) {
+            throw new BookNotFoundException("Book with ID: " + id + "not found.");
+        }
+
+        return idFound.get();
     }
 
-    public Optional<Book> findByIsbn(String isbn) {
-        return bookRepository.findByIsbn(isbn);
-    }
+    public Optional<Book> findByIsbn(String isbn) {return bookRepository.findByIsbn(isbn);}
 
     public List<Book> findAll() {
         return bookRepository.findAll();
