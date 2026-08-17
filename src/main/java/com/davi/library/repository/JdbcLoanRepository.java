@@ -2,9 +2,11 @@ package com.davi.library.repository;
 
 import com.davi.library.connection.ConnectionFactory;
 import com.davi.library.domain.Loan;
+import com.davi.library.domain.LoanStatus;
 import com.davi.library.exception.DataAccessException;
 
 import java.sql.*;
+import java.util.Optional;
 
 public class JdbcLoanRepository implements LoanRepository{
     private final ConnectionFactory connectionFactory;
@@ -39,5 +41,32 @@ public class JdbcLoanRepository implements LoanRepository{
         }
 
         throw new DataAccessException("Failed to save loan: generated id not returned");
+    }
+
+    @Override
+    public Optional<Loan> findById(Long id) {
+        String sql = "SELECT id, book_id, reader_id, status FROM loans WHERE id = ?";
+
+        try (Connection conn = connectionFactory.getConnection();
+        PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, id);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Loan loanRestored = Loan.restore(
+                            rs.getLong("id"),
+                            rs.getLong("book_id"),
+                            rs.getLong("reader_id"),
+                            LoanStatus.valueOf(rs.getString("status")));
+
+                    return Optional.of(loanRestored);
+                }
+            }
+
+        } catch (SQLException e) {
+            throw new DataAccessException("Failed to find loan by id", e);
+        }
+
+        return Optional.empty();
     }
 }
