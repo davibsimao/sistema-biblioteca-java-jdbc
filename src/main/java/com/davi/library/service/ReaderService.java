@@ -1,9 +1,7 @@
 package com.davi.library.service;
 
-import com.davi.library.domain.Book;
 import com.davi.library.domain.Reader;
 import com.davi.library.exception.DuplicateEmailException;
-import com.davi.library.exception.DuplicateIsbnException;
 import com.davi.library.exception.ReaderNotFoundException;
 import com.davi.library.repository.ReaderRepository;
 

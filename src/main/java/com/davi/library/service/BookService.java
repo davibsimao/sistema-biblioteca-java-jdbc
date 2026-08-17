@@ -1,14 +1,10 @@
 package com.davi.library.service;
 
 import com.davi.library.domain.Book;
-import com.davi.library.domain.Reader;
 import com.davi.library.exception.BookNotFoundException;
 import com.davi.library.exception.DuplicateIsbnException;
-import com.davi.library.exception.InvalidIsbnFormatException;
-import com.davi.library.exception.ReaderNotFoundException;
 import com.davi.library.repository.BookRepository;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
