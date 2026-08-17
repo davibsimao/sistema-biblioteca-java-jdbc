@@ -4,12 +4,14 @@ import com.davi.library.connection.ConnectionFactory;
 import com.davi.library.domain.Book;
 import com.davi.library.domain.Loan;
 import com.davi.library.domain.Reader;
+import com.davi.library.exception.DataAccessException;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Optional;
 
 import static com.davi.library.domain.LoanStatus.ACTIVE;
+import static com.davi.library.domain.LoanStatus.RETURNED;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class JdbcLoanRepositoryIntegrationTest {
@@ -118,4 +120,72 @@ public class JdbcLoanRepositoryIntegrationTest {
         assertTrue(containsLoan1);
         assertTrue(containsLoan2);
     }
+
+    @Test
+    void shouldUpdateLoanStatus() {
+        ConnectionFactory connectionFactory = new ConnectionFactory();
+
+        JdbcBookRepository bookRepository = new JdbcBookRepository(connectionFactory);
+        JdbcReaderRepository readerRepository = new JdbcReaderRepository(connectionFactory);
+        JdbcLoanRepository loanRepository = new JdbcLoanRepository(connectionFactory);
+
+        Book book = new Book("Update Status Book", "Update Status Author", "9780000000005");
+        Reader reader = new Reader("Update Status Reader", "updateStatusReader001@gmail.com");
+
+        Book savedBook = bookRepository.save(book);
+        Reader savedReader = readerRepository.save(reader);
+
+        Loan loan = new Loan(savedBook.getId(), savedReader.getId());
+        Loan savedLoan = loanRepository.save(loan);
+
+        Loan updatedLoan = loanRepository.updateStatus(savedLoan.getId(), RETURNED);
+
+        assertEquals(savedLoan.getId(), updatedLoan.getId());
+        assertEquals(savedBook.getId(), updatedLoan.getBookId());
+        assertEquals(savedReader.getId(), updatedLoan.getReaderId());
+        assertEquals(RETURNED, updatedLoan.getStatus());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenUpdatingNonExistentLoanStatus() {
+        ConnectionFactory connectionFactory = new ConnectionFactory();
+        JdbcLoanRepository loanRepository = new JdbcLoanRepository(connectionFactory);
+
+        Long nonExistentId = 999999L;
+
+        assertThrows(DataAccessException.class,
+                () -> loanRepository.updateStatus(nonExistentId, RETURNED));
+    }
+
+    @Test
+    void shouldPersistUpdatedLoanStatus() {
+        ConnectionFactory connectionFactory = new ConnectionFactory();
+
+        JdbcBookRepository bookRepository = new JdbcBookRepository(connectionFactory);
+        JdbcReaderRepository readerRepository = new JdbcReaderRepository(connectionFactory);
+        JdbcLoanRepository loanRepository = new JdbcLoanRepository(connectionFactory);
+
+        Book book = new Book("Persist Status Book", "Persist Status Author", "9780000000006");
+        Reader reader = new Reader("Persist Status Reader", "persistStatusReader001@gmail.com");
+
+        Book savedBook = bookRepository.save(book);
+        Reader savedReader = readerRepository.save(reader);
+
+        Loan loan = new Loan(savedBook.getId(), savedReader.getId());
+        Loan savedLoan = loanRepository.save(loan);
+
+        loanRepository.updateStatus(savedLoan.getId(), RETURNED);
+
+        Optional<Loan> result = loanRepository.findById(savedLoan.getId());
+
+        assertTrue(result.isPresent());
+
+        Loan foundLoan = result.get();
+
+        assertEquals(RETURNED, foundLoan.getStatus());
+        assertEquals(savedBook.getId(), foundLoan.getBookId());
+        assertEquals(savedReader.getId(), foundLoan.getReaderId());
+    }
+
+
 }

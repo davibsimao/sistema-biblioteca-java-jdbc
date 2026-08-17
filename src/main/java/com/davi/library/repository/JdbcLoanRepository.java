@@ -97,4 +97,28 @@ public class JdbcLoanRepository implements LoanRepository{
 
         return loans;
     }
+
+    @Override
+    public Loan updateStatus(Long id, LoanStatus newStatus) {
+        String sql = "UPDATE loans SET status = ? WHERE id = ?";
+
+        try (Connection conn = connectionFactory.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, newStatus.name());
+            ps.setLong(2, id);
+
+            int rowsAffected = ps.executeUpdate();
+
+            if (rowsAffected != 1) {
+                throw new DataAccessException("Failed to update loan: no rows affected");
+            }
+
+            return findById(id)
+                    .orElseThrow(() -> new DataAccessException("Failed to update loan: id not found after update"));
+
+        } catch (SQLException e) {
+            throw new DataAccessException("Failed to update loan status", e);
+        }
+    }
 }
